@@ -3,7 +3,6 @@
 Greasemonkey script that makes the assumed role more readable when using AWS SSO
 
 Transforms this:
-
 ![before](screenshots/before.png)
 
 Into this:
