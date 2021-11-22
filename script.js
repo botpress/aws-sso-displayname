@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name     AWS SSO Displayname
-// @version  1
+// @version  2
 // @grant    none
 // @include      https://console.aws.amazon.*
 // @include      https://*.console.aws.amazon.*
@@ -28,15 +28,15 @@ const getAccountInfo = (accountId) => {
 };
 
 const accountId = document.querySelector(
-  '[data-testid="aws-my-account-details"]'
-).textContent;
+  '[data-testid="account-detail-menu"] > div:nth-child(1) > div:nth-child(1) > span:nth-child(2)'
+).textContent.replace(/-/g, '');
 
 console.debug({ accountId });
 
 const { alias, color } = getAccountInfo(accountId);
 
 const displayName = document.querySelector(
-  "#awsc-login-display-name-user"
+  '[data-testid="awsc-nav-account-menu-button"] > span:nth-child(1)'
 ).textContent;
 
 console.debug({ displayName });
