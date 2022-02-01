@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name     AWS SSO Displayname
 // @description Makes it clearer which AWS account you are currently logged into.
-// @version  2
+// @version  2.0.1
 // @grant    none
 // @include      https://console.aws.amazon.*
 // @include      https://*.console.aws.amazon.*
