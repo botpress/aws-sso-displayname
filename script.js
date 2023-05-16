@@ -8,6 +8,8 @@
 // ==/UserScript==
 
 // Add your AWS account information below
+// You can use the following command to populate an initial map without colors:
+// $ aws organizations list-accounts | jq -r '.Accounts | map(.Id + ": [\"" + .Name + "\"],")[]'
 const accounts = {
   786908262739: ["root"],
   264850291039: ["production", "red"],
