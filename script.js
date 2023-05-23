@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name     AWS SSO Displayname
 // @description Makes it clearer which AWS account you are currently logged into.
-// @version  2.0.1
+// @version  2.0.2
 // @grant    none
 // @include      https://console.aws.amazon.*
 // @include      https://*.console.aws.amazon.*
@@ -19,46 +19,64 @@ const accounts = {
   891749101823: ["personal"],
 }
 
-const NO_COLOR = null
+const NO_COLOR = null;
+const POLL_INTERVAL = 100;
 
 const extractRole = (displayName) => {
-  return /(\w+)\/\w+/.exec(displayName)[1]
-}
+  return /(\w+)\/\w+/.exec(displayName)[1];
+};
 
 const getAccountInfo = (accountId) => {
-  const [alias, color] = accounts[accountId] || [accountId, NO_COLOR]
-  return { alias, color }
-}
+  const [alias, color] = accounts[accountId] || [accountId, NO_COLOR];
+  return { alias, color };
+};
 
-// Expected element format is "<span>5424-2879-6143<span>"
-const accountId = document.querySelector(
-  '[data-testid="account-detail-menu"] > div:nth-child(1) > div:nth-child(1) > span:nth-child(2)'
-).textContent.replace(/-/g, '')
+const getTitleElement = () =>
+  document.querySelector("span[title^='AWSReservedSSO']");
 
-console.debug({ accountId })
-// Expecting "786908262739"
+const getDisplayNameElement = () =>
+  document.querySelector(
+    '[data-testid="awsc-nav-account-menu-button"] > span:nth-child(1)'
+  );
 
-const { alias, color } = getAccountInfo(accountId)
+const getDropdownHeaderElement = () =>
+  document.querySelector(
+    '[data-testid="awsc-nav-account-menu-button"] [title]'
+  );
 
-// Expected element format is "<span title="AWSReservedSSO_AdministratorAccess_f23ec324f447d77/jake @ onvp-production" class="_1Vtx1Z7gxtNZJP2MVzVCLO _31GHADTBDW3BW3qVhZRFPq">AdministratorAccess/jake</span>"
-const displayName = document.querySelector(
-  '[data-testid="awsc-nav-account-menu-button"] > span:nth-child(1)'
-).textContent
+const isReady = () =>
+  getTitleElement() && getDisplayNameElement() && getDropdownHeaderElement();
 
-console.debug({ displayName })
-// Expecting "AdministratorAccess/jake"
+const interval = setInterval(() => {
+  if (isReady()) {
+    clearInterval(interval);
+    onReady();
+  }
+}, POLL_INTERVAL);
 
-const role = extractRole(displayName)
+function onReady(elem) {
+  const accountId = getTitleElement()
+    .getAttribute("title")
+    .match(/AWSReservedSSO_.*\s(.*)/)[1]
+    .replace(/-/g, "");
+  const { alias, color } = getAccountInfo(accountId);
 
-console.debug({ role })
-// Expecting "AdministratorAccess"
+  // Expected element format is "<span title="AWSReservedSSO_AdministratorAccess_f23ec324f447d77/jake @ onvp-production" class="_1Vtx1Z7gxtNZJP2MVzVCLO _31GHADTBDW3BW3qVhZRFPq">AdministratorAccess/jake</span>"
+  const displayName = getDisplayNameElement().textContent;
 
-const dropdownHeader = document.querySelector(
-  '[data-testid="awsc-nav-account-menu-button"] [title]'
-)
+  console.debug({ displayName });
+  // Expecting "AdministratorAccess/jake"
 
-dropdownHeader.innerHTML = `${role}@${alias}`
+  const role = extractRole(displayName);
 
-if (color !== NO_COLOR) {
-  dropdownHeader.style.backgroundColor = color
+  console.debug({ role });
+  // Expecting "AdministratorAccess"
+
+  const dropdownHeader = getDropdownHeaderElement();
+
+  dropdownHeader.innerHTML = `${role}@${alias}`;
+
+  if (color !== NO_COLOR) {
+    dropdownHeader.style.backgroundColor = color;
+  }
 }
